@@ -1,0 +1,18 @@
+[project]
+name = "ais-backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "michealnaita", email = "michealnaita@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi[standard]>=0.142.1",
+]
+
+[tool.uv]
+package = false
+
+[tool.fastapi]
+entrypoint = "app.main:app"
