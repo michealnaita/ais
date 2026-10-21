@@ -8,3 +8,8 @@ wheels/
 
 # Virtual environments
 .venv
+
+# misc
+.claude/
+data/
+storage
