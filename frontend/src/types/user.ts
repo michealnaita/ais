@@ -1,11 +1,18 @@
-export type Role = "student" | "instructor" | "admin";
+import type { UserRole } from "./api";
+
+export type Role = UserRole;
+
+/** Claims the backend puts in the session token (its AuthJWTPayload). */
+export type SessionClaims = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: Role;
+};
 
 /** The signed-in user, as the UI needs it. */
-export type CurrentUser = {
-  id: number;
-  role: Role;
+export type CurrentUser = SessionClaims & {
   name: string;
   initials: string;
-  /** Second line under the name in the sidebar user card. */
-  sub: string;
 };

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Newsreader, Source_Serif_4, Inter } from "next/font/google";
-import { UserProvider } from "@/context/UserProvider";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { QueryProvider } from "@/context/QueryProvider";
+import { UserProvider } from "@/context/UserProvider";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -22,7 +23,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={cn(newsreader.variable, sourceSerif.variable, jetbrainsMono.variable, "font-sans", inter.variable)}>
       <body>
         <QueryProvider>
-          <UserProvider>{children}</UserProvider>
+          <UserProvider>
+            <ProtectedRoute>{children}</ProtectedRoute>
+          </UserProvider>
         </QueryProvider>
         <Toaster />
       </body>
