@@ -3,7 +3,11 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 from app.config import Config
 
-engine = create_engine(Config.DATABASE_URL, echo=True)
+# Log every SQL statement only while developing. Off everywhere else, since
+# the log includes parameter values such as password hashes.
+engine = create_engine(
+    Config.DATABASE_URL, echo=Config.ENVIRONMENT == "development"
+)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

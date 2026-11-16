@@ -13,3 +13,13 @@ wheels/
 .claude/
 data/
 storage
+
+# Local secrets
+.env
+.env.local
+
+# Local SQLite database
+database/
+
+# macOS
+.DS_Store

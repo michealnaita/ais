@@ -1,0 +1,15 @@
+# Dev image for the API and the Celery worker. Only the dependencies live in
+# the image; the source is bind-mounted by docker-compose.dev.yaml.
+FROM astral/uv:python3.14-bookworm-slim
+
+# Keep the container's virtualenv outside /app/backend so the bind mount
+# never touches the host's .venv (and vice versa)
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app/backend
+
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-install-project
