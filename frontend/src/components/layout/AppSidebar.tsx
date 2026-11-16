@@ -2,9 +2,10 @@
 
 /* Shared app sidebar built on the shadcn sidebar primitives. Role sidebars render
    this with their own nav items; the active item follows the current path. */
+import { Info } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -18,8 +19,9 @@ import {
   SidebarMenuItem,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useUser } from "@/context/UserProvider";
+import { AboutAisDialog } from "./AboutAisDialog";
 import type { NavItemConfig } from "./types";
+import { UserMenu } from "./UserMenu";
 
 export type AppSidebarProps = {
   /** Links shown in the nav, in order. */
@@ -31,14 +33,17 @@ export type AppSidebarProps = {
 };
 
 export function AppSidebar({ items, label, badges }: AppSidebarProps) {
-  const user = useUser();
   const navProps = { items, badges };
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   return (
     <Sidebar variant="inset" collapsible="icon">
-      <SidebarHeader className="flex-row items-center justify-between px-3.5 pt-4 pb-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2">
+      <SidebarHeader className="flex-row items-center justify-between px-3.5 pt-4 pb-1 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:px-2">
+        {/* Full logo when expanded, the square AIS mark when collapsed. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="block h-[25px] w-auto pl-1.5 group-data-[collapsible=icon]:hidden" src="/assets/ais_logo.png" alt="AIS" />
+        <img className="block h-[68px] w-auto group-data-[collapsible=icon]:hidden" src="/logo.png" alt="Academic Integrity System" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="hidden size-11 group-data-[collapsible=icon]:block" src="/logo%20min.png" alt="AIS" />
         <SidebarTrigger className="text-ink-tertiary hover:text-ink-secondary [&_svg]:size-5" />
       </SidebarHeader>
 
@@ -57,24 +62,23 @@ export function AppSidebar({ items, label, badges }: AppSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="px-3 pb-3">
+      <SidebarFooter className="gap-1 px-3 pb-3">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" tooltip={user.name} className="h-[50px] gap-[11px] rounded-[11px] px-2 hover:bg-hover group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:p-1!">
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-linear-135 from-[#3a3a3a] to-[#111] text-[13px] font-semibold text-white">
-                {user.initials}
-              </span>
-              <span className="flex min-w-0 flex-col">
-                <span className="truncate text-[13.5px] leading-[1.3] font-semibold text-ink">{user.name}</span>
-                <span className="truncate text-xs leading-[1.3] text-ink-tertiary">{user.sub}</span>
-              </span>
+            <SidebarMenuButton tooltip="About AIS" onClick={() => setAboutOpen(true)} className={NAV_BUTTON}>
+              <Info />
+              <span>About AIS</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
+        <UserMenu />
       </SidebarFooter>
+      <AboutAisDialog open={aboutOpen} onOpenChange={setAboutOpen} />
     </Sidebar>
   );
 }
+
+const NAV_BUTTON = "h-10 gap-3 rounded-[9px] px-2.5 text-[14.5px] font-medium text-ink hover:bg-black/5 data-active:bg-white data-active:shadow-xs data-active:font-medium [&_svg]:size-5 [&_svg]:text-ink-secondary data-active:[&_svg]:text-ink group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:p-2.5!";
 
 type NavProps = Pick<AppSidebarProps, "items" | "badges">;
 
@@ -98,7 +102,7 @@ function Nav({ items, badges, activeHref }: NavProps & { activeHref: string | nu
               render={<Link href={href} aria-current={active ? "page" : undefined} />}
               isActive={active}
               tooltip={label}
-              className="h-10 gap-3 rounded-[9px] px-2.5 text-[14.5px] font-medium text-ink hover:bg-hover data-active:bg-active data-active:font-medium [&_svg]:size-5 [&_svg]:text-ink-secondary data-active:[&_svg]:text-ink group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:p-2.5!"
+              className={NAV_BUTTON}
             >
               <I />
               <span>{label}</span>

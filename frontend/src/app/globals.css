@@ -47,6 +47,8 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-accent-foreground: var(--brand-accent-foreground);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -75,18 +77,20 @@
   --color-panel: #f9f9f9;
   --color-subtle: #fafafa;
 
-  --color-green-bg: #e7f5ec;
-  --color-green-fg: #137a3e;
-  --color-green-dot: #1a9b50;
-  --color-blue-bg: #e8f0fe;
-  --color-blue-fg: #1a56c4;
-  --color-blue-dot: #1a56c4;
-  --color-red-bg: #fdecec;
-  --color-red-fg: #c0362c;
-  --color-red-dot: #d9453a;
+  /* Status tones, tuned to the brand: chalkboard green, ink blue, brick red. */
+  --color-green-bg: #e5efe9;
+  --color-green-fg: #2a6b52;
+  --color-green-dot: #3c8f6c;
+  --color-blue-bg: #e7ecf7;
+  --color-blue-fg: #2f4b8a;
+  --color-blue-dot: #4a6cc0;
+  --color-red-bg: #f9e9e6;
+  --color-red-fg: #b03f30;
+  --color-red-dot: #d2584a;
   --color-amber-bg: #fdf3e3;
-  --color-amber-fg: #9a6700;
-  --color-amber-dot: #c08a14;
+  /* Warm orange rather than mustard, so it reads apart from the pencil-yellow primary. */
+  --color-amber-fg: #c05a0a;
+  --color-amber-dot: #f08a2c;
   --color-gray-bg: #f3f4f6;
   --color-gray-fg: #6b7280;
   --color-gray-dot: #9ca3af;
@@ -95,6 +99,10 @@
   --color-violet-dot: #7c5cd6;
   /* "due soon" / past-deadline accent */
   --color-late: #b24f2c;
+  /* Neutral surfaces for the admin dashboard. */
+  --color-charcoal: #2b2d31;
+  /* Soft warm grey for the admin overview stat cards. */
+  --color-stone: #f1f1f0;
 }
 
 @theme {
@@ -152,8 +160,12 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  /* Brand: pencil-yellow primary with ink text; chalkboard-green accent. shadcn's own
+     --accent stays the subtle grey used for menu hovers. */
+  --primary: #ffd65c;
+  --primary-foreground: #2b2615;
+  --brand-accent: #2f5d4e;
+  --brand-accent-foreground: #ffffff;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
@@ -172,7 +184,8 @@
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
   /* Sidebar maps onto the app's own tokens (panel/ink/hover/line). */
-  --sidebar: var(--color-panel);
+  /* App background behind the white content card; darker than --color-panel for contrast. */
+  --sidebar: #e6e6e3;
   --sidebar-foreground: var(--color-ink);
   --sidebar-primary: var(--color-ink);
   --sidebar-primary-foreground: #fff;
@@ -189,8 +202,10 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: #ffd65c;
+  --primary-foreground: #2b2615;
+  --brand-accent: #4f8a74;
+  --brand-accent-foreground: #ffffff;
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
