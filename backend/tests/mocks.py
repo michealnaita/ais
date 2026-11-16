@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 from app import utils
 
 DEFAULT_PASSWORD = "default-password"
@@ -20,6 +22,7 @@ def create_user_record(**overides):
 def create_assignment_record(**overrides):
     assignment = {
         "title": "Assignment 1",
+        "deadline": datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=7),
         "description": "This is the first assignment.",
         "enrollment_code": "ABC123",
         "instructor_id": "user-id-placeholder",
@@ -29,9 +32,9 @@ def create_assignment_record(**overrides):
     return assignment
 
 
-def create_document_record(user_id: str = "user-id-placeholder", **overrides):
+def create_document_record(author_id: str = "author-id-placeholder", **overrides):
     document = {
-        "user_id": user_id,
+        "author_id": author_id,
         "original_file_name": "document.pdf",
         "file_name": "document.pdf",
         "similarity_score": None,

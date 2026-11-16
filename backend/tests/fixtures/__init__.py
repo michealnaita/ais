@@ -40,8 +40,12 @@ def create_instructor(db: Session):
     return create_user(db, email="instructor@test.com", role="instructor")
 
 
-def create_assignment(db: Session, instructor_id: str = "placeholder-instructor"):
-    assignment = Assignment(**create_assignment_record(instructor_id=instructor_id))
+def create_assignment(
+    db: Session, instructor_id: str = "placeholder-instructor", **overrides
+):
+    assignment = Assignment(
+        **create_assignment_record(instructor_id=instructor_id, **overrides)
+    )
     db.add(assignment)
     db.commit()
     return assignment
@@ -71,8 +75,8 @@ def create_assignments(db: Session, student_id: str, instructor_id: str):
     return enrolled, other
 
 
-def create_document(db: Session, user_id: str, **overrides):
-    document = Document(**create_document_record(user_id=user_id, **overrides))
+def create_document(db: Session, author_id: str, **overrides):
+    document = Document(**create_document_record(author_id=author_id, **overrides))
     db.add(document)
     db.commit()
     return document
@@ -122,7 +126,8 @@ def create_document_similarity_report(
 ):
     # create document chunk and similar chunk
     chunk = DocumentChunk(**create_document_chunk_record(document_id))
-    other_document = Document(**create_document_record("other-student-id"))
+    other_author = create_student(db, email="other-author@test.com")
+    other_document = Document(**create_document_record(other_author.id))
     db.add_all([chunk, other_document])
     db.flush()
     other_chunk = DocumentChunk(**create_document_chunk_record(other_document.id))

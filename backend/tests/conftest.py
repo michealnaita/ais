@@ -1,6 +1,10 @@
 import os
 
 os.environ["ENVIRONMENT"] = "testing"
+# Tests never use the real secret from .env
+os.environ["JWT_SECRET"] = "test-jwt-secret-" + "x" * 32
+# Required setting; tests never talk to a real Redis
+os.environ.setdefault("REDIS_URL", "redis://localhost:6379/15")
 
 import pytest
 from app.main import app
@@ -34,6 +38,18 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 Base.metadata.create_all(bind=test_engine)
 
 
+@pytest.fixture(autouse=True)
+def queued_documents(monkeypatch: pytest.MonkeyPatch) -> list[str]:
+    """Stand-in for the Celery task: records the ids sent to the worker
+    instead of talking to Redis."""
+    from app.worker import tasks
+
+    sent: list[str] = []
+    fake_task = type("FakeTask", (), {"delay": staticmethod(sent.append)})
+    monkeypatch.setattr(tasks, "process_document", fake_task)
+    return sent
+
+
 @pytest.fixture
 def db():
     connection = test_engine.connect()
@@ -56,7 +72,8 @@ def client(db):
 
     app.dependency_overrides[get_db] = override_get_db
 
-    with TestClient(app) as c:
+    # https so the client sends Secure cookies back, as a browser would
+    with TestClient(app, base_url="https://testserver") as c:
         yield c
 
     app.dependency_overrides.clear()
