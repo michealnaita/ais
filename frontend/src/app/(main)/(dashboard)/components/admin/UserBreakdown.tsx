@@ -7,7 +7,7 @@ export function UserBreakdown({ counts }: { counts: UserCount[] }) {
       {counts.map(c => (
         <span className="flex items-center gap-1.5 text-[12.5px] text-ink-secondary" key={c.label}>
           <span className={`size-[7px] rounded-full ${TONE[c.tone].dot}`} />
-          <b className="font-bold text-ink tabular-nums">{c.count}</b> {c.label}
+          <b className="font-bold text-ink tabular-nums">{c.count.toLocaleString()}</b> {c.label}
         </span>
       ))}
     </div>

@@ -1,19 +1,18 @@
-import { TONE } from "@/utils/tones";
+import type { SystemLog } from "@/types/api";
+import { formatRelative } from "@/utils/formatDate";
 import { FEED_STYLE } from "../../constants";
-import type { FeedEvent } from "../../types";
+import { feedKind } from "../../utils";
 
-export function ActivityFeedItem({ event }: { event: FeedEvent }) {
-  const st = FEED_STYLE[event.kind];
-  const I = st.icon;
+/* One line per event: icon, message, time right-aligned. */
+export function ActivityFeedItem({ event }: { event: SystemLog }) {
+  const I = FEED_STYLE[feedKind(event)].icon;
   return (
-    <div className="flex gap-[13px] px-3 py-3.5">
-      <span className={`mt-px flex size-8 shrink-0 items-center justify-center rounded-[9px] ${TONE[st.tone].bg} ${TONE[st.tone].fg}`}>
-        <I size={16} />
+    <div className="flex items-center gap-3 px-1 py-2">
+      <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+        <I size={14} />
       </span>
-      <div className="min-w-0 flex-1">
-        <div className="text-[13.8px] leading-[1.45] text-ink">{event.text[0]}<b className="font-semibold">{event.text[1]}</b>{event.text[2]}</div>
-        <div className="mt-0.5 text-xs text-ink-tertiary">{event.time}</div>
-      </div>
+      <div className="min-w-0 flex-1 truncate text-[13.5px] text-ink" title={event.message}>{event.message}</div>
+      <div className="shrink-0 text-xs text-ink-tertiary tabular-nums" title={event.timestamp}>{formatRelative(event.timestamp)}</div>
     </div>
   );
 }

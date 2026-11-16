@@ -1,72 +1,65 @@
 'use client';
 
 /* Student home: totals and submission history, with upcoming assignments alongside when there are any. */
-import { ArrowUpRight, ClipboardList, Inbox, Plus } from 'lucide-react';
+import { ArrowUpRight, ClipboardList, Inbox } from 'lucide-react';
 import Link from 'next/link';
-import { useMemo } from 'react';
-import { toast } from 'sonner';
+import { useState } from 'react';
 import { ContentSplit } from '@/components/ContentSplit';
+import { CornerIllustration } from '@/components/Illustration';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
 import { PendingAssignmentsCard } from '@/components/student-assignments/PendingAssignmentsCard';
 import { StudentAssignmentDialogs } from '@/components/student-assignments/StudentAssignmentDialogs';
 import { SectionHead } from '@/components/SectionHead';
 import { SubmissionHistory } from '@/components/submissions/SubmissionHistory';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUser } from '@/context/UserProvider';
-import { useEnrolledAssignments } from '@/hooks/useEnrolledAssignments';
-import { useStudentSubmissions, useSubmitDocument } from '@/hooks/useSubmissions';
 import { ROUTES } from '@/lib/routes';
+import type { Assignment } from '@/types/assignment';
+import { useStudentDashboard } from '../queries';
 
 export function StudentDashboard() {
   const user = useUser();
-  const { data: rows = [], isPending } = useStudentSubmissions(user.id);
-  const submitDocument = useSubmitDocument();
-  const enrolled = useEnrolledAssignments();
+  const { data, isPending } = useStudentDashboard();
+  const [detail, setDetail] = useState<Assignment | null>(null);
 
-  const upcoming = enrolled.assignments;
-  const stats = useMemo(
-    () => ({
-      total: rows.length,
-      inReview: rows.filter((r) => r.status === 'processing').length,
-      /* Enrolled = assignments already submitted to plus those still waiting. */
-      enrolled: new Set([...rows.map((r) => r.assignment), ...upcoming.map((a) => a.name)]).size,
-    }),
-    [rows, upcoming],
-  );
-  const addButton = (
-    <Button variant="outline" className={upcoming.length ? 'w-full' : undefined} onClick={() => enrolled.setAddOpen(true)}>
-      <Plus /> Add assignment
-    </Button>
-  );
+  const rows = data?.submissionHistory ?? [];
+  const upcoming = data?.upcomingAssignments ?? [];
+  const stats = {
+    total: data?.submissionCount ?? 0,
+    /* Only counts the recent history the dashboard returns. */
+    inReview: rows.filter((r) => r.documentStatus === 'queued').length,
+    enrolled: data?.assignmentCount ?? 0,
+  };
 
   return (
     <>
       <PageContainer>
         <PageHeader
-          title={`Welcome back, ${user.name.split(' ')[0]}`}
+          title={`Welcome back, ${user.firstName}`}
           subtitle="Your submission history and the assignments waiting on you."
-          actions={upcoming.length ? undefined : addButton}
         />
 
         <ContentSplit
           main={
             <>
               <div className="mb-[34px] grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Card size="sm">
-                  <CardHeader>
+                <Card size="sm" className="relative bg-brand-accent text-brand-accent-foreground ring-0 [&_[data-slot=card-description]]:text-brand-accent-foreground/75">
+                  <CornerIllustration name="target" className="invert" />
+                  <CardHeader className="relative">
                     <CardDescription className="flex items-center gap-2"><Inbox className="size-4" /> Total submissions</CardDescription>
-                    <CardTitle className="text-2xl tabular-nums">{stats.total}</CardTitle>
+                    <CardTitle className="text-2xl font-bold tabular-nums">{stats.total}</CardTitle>
                   </CardHeader>
-                  <CardFooter className="text-sm text-muted-foreground">{stats.inReview} still being analysed</CardFooter>
+                  <CardFooter className="relative text-sm text-brand-accent-foreground/75">{stats.inReview} still being analysed</CardFooter>
                 </Card>
-                <Card size="sm">
-                  <CardHeader>
+                <Card size="sm" className="relative bg-primary text-primary-foreground ring-0 [&_[data-slot=card-description]]:text-primary-foreground/70">
+                  <CornerIllustration name="growing" className="h-[84px]" />
+                  <CardHeader className="relative">
                     <CardDescription className="flex items-center gap-2"><ClipboardList className="size-4" /> Enrolled assignments</CardDescription>
-                    <CardTitle className="text-2xl tabular-nums">{stats.enrolled}</CardTitle>
+                    <CardTitle className="text-2xl font-bold tabular-nums">{stats.enrolled}</CardTitle>
                   </CardHeader>
-                  <CardFooter className="text-sm text-muted-foreground">{upcoming.length} not yet submitted</CardFooter>
+                  <CardFooter className="relative text-sm text-primary-foreground/70">{upcoming.length} not yet submitted</CardFooter>
                 </Card>
               </div>
 
@@ -79,6 +72,7 @@ export function StudentDashboard() {
                 <CardContent>
                   <SubmissionHistory
                     className="mt-0"
+                    inlineAssignment
                     submissions={rows}
                     emptyMessage="You haven't submitted anything yet."
                     loading={isPending}
@@ -91,31 +85,17 @@ export function StudentDashboard() {
             upcoming.length > 0 && (
               <PendingAssignmentsCard
                 title="Upcoming assignments"
-                subtitle="Due soon and not yet submitted"
+                subtitle="waiting to be submitted"
                 assignments={upcoming}
-                onSelect={enrolled.setDetail}
-                footer={addButton}
+                illustration="time-flies"
+                onSelect={setDetail}
               />
             )
           }
         />
       </PageContainer>
 
-      <StudentAssignmentDialogs
-        state={enrolled}
-        onEnrolled={(a) => toast.success(`Enrolled in ${a.name}`)}
-        onSubmit={(doc) => {
-          submitDocument.mutate({
-            name: doc.name,
-            ext: doc.ext,
-            size: doc.size,
-            assignment: doc.assignment,
-            studentId: user.id,
-            student: user.name,
-          });
-          toast.success(`“${doc.name}” submitted to ${doc.assignment}`);
-        }}
-      />
+      <StudentAssignmentDialogs assignment={detail} onClose={() => setDetail(null)} />
     </>
   );
 }

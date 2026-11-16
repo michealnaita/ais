@@ -2,30 +2,14 @@ import type { Tone } from "@/utils/tones";
 
 export type SystemService = {
   name: string;
-  sub: string;
-  icon: "server" | "database" | "cpu";
   up: boolean;
-  detail: string;
 };
 
-export type FeedKind = "submission" | "complete" | "failed" | "user";
-
-export type FeedEvent = {
-  kind: FeedKind;
-  /** [lead, bold subject, trailing] */
-  text: [string, string, string];
-  time: string;
-};
+/** Entity a logged event is about: the part of its type before the dot ("submission.created"). */
+export type FeedKind = "auth" | "user" | "assignment" | "document" | "submission" | "error";
 
 export type UserCount = {
   tone: Tone;
-  count: string;
+  count: number;
   label: string;
-};
-
-export type AdminOverview = {
-  systems: SystemService[];
-  feed: FeedEvent[];
-  userCounts: UserCount[];
-  failedJobs: number;
 };
