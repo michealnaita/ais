@@ -1,21 +1,16 @@
+import type { CreateUserInput, UserResponse } from "@/types/api";
 import type { Role } from "@/types/user";
 export type { Role };
 
-export type User = {
-  id: number;
-  name: string;
-  email: string;
-  role: Role;
-  active: boolean;
-};
+/** An account as the API lists it. It carries no role yet. */
+export type User = UserResponse;
 
-export type UserFormData = Pick<User, "name" | "email" | "role">;
+export type UserFormData = CreateUserInput;
 
 export type UserFilter = "all" | Role | "deactivated";
 
-export type UserAction = "edit" | "toggle";
+export type UserAction = "deactivate";
 
 export type UserModal =
   | { type: "create" }
-  | { type: "edit"; u: User }
-  | { type: "toggle"; u: User };
+  | { type: "deactivate"; u: User };

@@ -5,7 +5,8 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { cn } from "@/utils/cn";
 import { initials } from "@/utils/initials";
 import type { User, UserAction } from "../types";
-import { RoleLabel } from "./RoleLabel";
+import { NotAvailable } from "@/components/NotAvailable";
+import { fullName } from "../utils";
 import { UserRowMenu } from "./UserRowMenu";
 
 type UserRowProps = {
@@ -14,14 +15,17 @@ type UserRowProps = {
 };
 
 export function UserRow({ user, onAction }: UserRowProps) {
+  const name = fullName(user);
+  const active = user.status === "active";
   return (
-    <TableRow className={cn(!user.active && "text-muted-foreground")}>
+    <TableRow className={cn(!active && "text-muted-foreground")}>
       <TableCell>
-        <TitleCell icon={<Avatar><AvatarFallback>{initials(user.name)}</AvatarFallback></Avatar>} title={user.name} caption={`AIS-${user.id}`} />
+        <TitleCell icon={<Avatar><AvatarFallback>{initials(name)}</AvatarFallback></Avatar>} title={name} caption={`AIS-${user.id.slice(0, 6).toUpperCase()}`} />
       </TableCell>
       <TableCell>{user.email}</TableCell>
-      <TableCell><RoleLabel role={user.role} /></TableCell>
-      <TableCell><Badge variant={user.active ? "secondary" : "outline"}>{user.active ? "Active" : "Deactivated"}</Badge></TableCell>
+      {/* The API doesn't return roles yet. */}
+      <TableCell><NotAvailable><span className="text-muted-foreground">—</span></NotAvailable></TableCell>
+      <TableCell><Badge variant={active ? "secondary" : "outline"}>{active ? "Active" : "Deactivated"}</Badge></TableCell>
       <TableCell><UserRowMenu user={user} onAction={onAction} /></TableCell>
     </TableRow>
   );

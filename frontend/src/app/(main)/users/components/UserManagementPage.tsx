@@ -10,10 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useCreateUser, useToggleUserStatus, useUpdateUser } from "../actions";
+import { NotAvailable } from "@/components/NotAvailable";
+import { isApiError } from "@/lib/api";
+import { useCreateUser, useDeactivateUser } from "../actions";
 import { FILTERS } from "../constants";
 import { useUsers } from "../queries";
 import type { User, UserAction, UserFilter, UserFormData, UserModal } from "../types";
+import { fullName } from "../utils";
 import { ToggleUserStatusDialog } from "./ToggleUserStatusDialog";
 import { UserFormDialog } from "./UserFormDialog";
 import { UsersTable } from "./UsersTable";
@@ -21,23 +24,22 @@ import { UsersTable } from "./UsersTable";
 export default function UserManagementPage() {
   const { data: rows = [], isPending } = useUsers();
   const createMutation = useCreateUser();
-  const updateMutation = useUpdateUser();
-  const toggleMutation = useToggleUserStatus();
+  const deactivateMutation = useDeactivateUser();
   const [filter, setFilter] = useState<UserFilter>("all");
   const [query, setQuery] = useState("");
   const [modal, setModal] = useState<UserModal | null>(null);
 
   const counts = useMemo(() => {
-    const c: Record<UserFilter, number> = { all: rows.length, student: 0, instructor: 0, admin: 0, deactivated: 0 };
-    rows.forEach(r => { c[r.role]++; if (!r.active) c.deactivated++; });
+    const c: Partial<Record<UserFilter, number>> = { all: rows.length, deactivated: 0 };
+    rows.forEach(r => { if (r.status !== "active") c.deactivated!++; });
     return c;
   }, [rows]);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
     return rows.filter(r => {
-      const fOk = filter === "all" ? true : filter === "deactivated" ? !r.active : r.role === filter;
-      const qOk = !q || r.name.toLowerCase().includes(q) || r.email.toLowerCase().includes(q);
+      const fOk = filter === "all" || (filter === "deactivated" && r.status !== "active");
+      const qOk = !q || fullName(r).toLowerCase().includes(q) || r.email.toLowerCase().includes(q);
       return fOk && qOk;
     });
   }, [rows, filter, query]);
@@ -47,17 +49,14 @@ export default function UserManagementPage() {
   }
   function createUser(data: UserFormData) {
     createMutation.mutate(data, {
-      onSuccess: () => { setModal(null); toast.success(`Created “${data.name}”`); },
+      onSuccess: () => { setModal(null); toast.success(`Created “${fullName(data)}”`); },
+      onError: err => toast.error(isApiError(err) ? `Couldn't create the user: ${err.message}` : "Couldn't create the user."),
     });
   }
-  function saveEdit(u: User, data: UserFormData) {
-    updateMutation.mutate({ id: u.id, data }, {
-      onSuccess: () => { setModal(null); toast.success(`Updated “${data.name}”`); },
-    });
-  }
-  function confirmToggle(u: User) {
-    toggleMutation.mutate(u, {
-      onSuccess: () => { setModal(null); toast.success(u.active ? `Deactivated “${u.name}”` : `Reactivated “${u.name}”`); },
+  function confirmDeactivate(u: User) {
+    deactivateMutation.mutate(u.id, {
+      onSuccess: () => { setModal(null); toast.success(`Deactivated “${fullName(u)}”`); },
+      onError: err => toast.error(isApiError(err) ? `Couldn't deactivate: ${err.message}` : "Couldn't deactivate the user."),
     });
   }
 
@@ -66,7 +65,7 @@ export default function UserManagementPage() {
       <PageContainer>
         <PageHeader
           title="User management"
-          subtitle="Create, edit and manage access for every account on the platform."
+          subtitle="Create accounts and manage access across the platform."
           actions={<Button onClick={() => setModal({ type: "create" })}><UserPlus /> Create user</Button>}
         />
 
@@ -76,7 +75,10 @@ export default function UserManagementPage() {
             <InputGroupAddon><Search /></InputGroupAddon>
           </InputGroup>
           <ToggleGroup value={[filter]} onValueChange={v => { if (v[0]) setFilter(v[0] as UserFilter); }}>
-            {FILTERS.map(f => (
+            {FILTERS.map(f => counts[f.key] == null ? (
+              /* Role filters need roles, which the API doesn't return yet. */
+              <NotAvailable key={f.key}><ToggleGroupItem value={f.key} disabled>{f.label}</ToggleGroupItem></NotAvailable>
+            ) : (
               <ToggleGroupItem key={f.key} value={f.key}>{f.label} <Badge variant="secondary">{counts[f.key]}</Badge></ToggleGroupItem>
             ))}
           </ToggleGroup>
@@ -87,9 +89,8 @@ export default function UserManagementPage() {
         <UsersTable loading={isPending} users={visible} onAction={handleAction} />
       </PageContainer>
 
-      {modal?.type === "create" && <UserFormDialog mode="create" onClose={() => setModal(null)} onSave={createUser} />}
-      {modal?.type === "edit" && <UserFormDialog mode="edit" initial={modal.u} onClose={() => setModal(null)} onSave={d => saveEdit(modal.u, d)} />}
-      {modal?.type === "toggle" && <ToggleUserStatusDialog user={modal.u} onClose={() => setModal(null)} onConfirm={() => confirmToggle(modal.u)} />}
+      {modal?.type === "create" && <UserFormDialog pending={createMutation.isPending} onClose={() => setModal(null)} onSave={createUser} />}
+      {modal?.type === "deactivate" && <ToggleUserStatusDialog user={modal.u} onClose={() => setModal(null)} onConfirm={() => confirmDeactivate(modal.u)} />}
     </>
   );
 }
