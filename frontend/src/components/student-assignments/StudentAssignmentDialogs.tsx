@@ -1,29 +1,34 @@
 "use client";
 
-/* Join-by-code and assignment-detail dialogs, driven by useEnrolledAssignments(). */
-import { AddAssignmentDialog } from "./AddAssignmentDialog";
+/* The assignment-detail dialog for one of the student's assignments, wired to submitting. */
+import { toast } from "sonner";
+import { useSubmitDocument } from "@/hooks/useSubmissions";
+import type { Assignment } from "@/types/assignment";
 import { AssignmentDetailDialog } from "./AssignmentDetailDialog";
-import type { EnrolledAssignment, NewSubmission } from "@/types/enrolledAssignment";
-import type { useEnrolledAssignments } from "@/hooks/useEnrolledAssignments";
 
 type StudentAssignmentDialogsProps = {
-  state: ReturnType<typeof useEnrolledAssignments>;
-  onEnrolled: (assignment: EnrolledAssignment) => void;
-  onSubmit: (submission: NewSubmission) => void;
+  /** The assignment whose dialog is open, if any. */
+  assignment: Assignment | null;
+  onClose: () => void;
 };
 
-export function StudentAssignmentDialogs({ state, onEnrolled, onSubmit }: StudentAssignmentDialogsProps) {
-  const { addOpen, setAddOpen, detail, setDetail } = state;
+export function StudentAssignmentDialogs({ assignment, onClose }: StudentAssignmentDialogsProps) {
+  const submit = useSubmitDocument();
+  if (!assignment) return null;
   return (
-    <>
-      {addOpen && (
-        <AddAssignmentDialog onClose={() => setAddOpen(false)}
-          onEnroll={a => { setAddOpen(false); onEnrolled(a); }} />
-      )}
-      {detail && (
-        <AssignmentDetailDialog assignment={detail} onClose={() => setDetail(null)}
-          onSubmit={doc => { setDetail(null); onSubmit(doc); }} />
-      )}
-    </>
+    <AssignmentDetailDialog
+      key={assignment.id}
+      assignment={assignment}
+      pending={submit.isPending}
+      error={submit.error?.message}
+      onClose={() => { submit.reset(); onClose(); }}
+      onSubmit={file => submit.mutate({ assignmentId: assignment.id, file }, {
+        onSuccess: () => {
+          toast.success(`“${file.name}” submitted to ${assignment.title}`);
+          submit.reset();
+          onClose();
+        },
+      })}
+    />
   );
 }

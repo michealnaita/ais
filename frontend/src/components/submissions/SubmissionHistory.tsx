@@ -13,9 +13,12 @@ type SubmissionHistoryProps = {
   loading?: boolean;
   emptyMessage?: string;
   className?: string;
+  inlineAssignment?: boolean;
+  scrollBody?: boolean;
+  total?: number;
 };
 
-export function SubmissionHistory({ submissions, layout = "student", loading, emptyMessage, className }: SubmissionHistoryProps) {
+export function SubmissionHistory({ submissions, layout = "student", loading, emptyMessage, className, inlineAssignment, scrollBody, total }: SubmissionHistoryProps) {
   const router = useRouter();
   return (
     <SubmissionsTable
@@ -24,6 +27,9 @@ export function SubmissionHistory({ submissions, layout = "student", loading, em
       layout={layout}
       loading={loading}
       emptyMessage={emptyMessage}
+      inlineAssignment={inlineAssignment}
+      scrollBody={scrollBody}
+      total={total}
       onOpen={r => router.push(reportRoute(r.id))}
     />
   );

@@ -1,10 +1,10 @@
 import { X } from "lucide-react";
 import { FileIcon } from "@/components/FileIcon";
-import type { SelectedFile } from "@/types/enrolledAssignment";
 import { Button } from "@/components/ui/button";
+import { formatSize } from "@/utils/formatSize";
 
 type SelectedFileChipProps = {
-  file: SelectedFile;
+  file: File;
   onRemove: () => void;
 };
 
@@ -14,7 +14,7 @@ export function SelectedFileChip({ file, onRemove }: SelectedFileChipProps) {
       <FileIcon />
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-medium">{file.name}</div>
-        <div className="mt-px text-[12.5px] text-ink-tertiary">{file.size}</div>
+        <div className="mt-px text-[12.5px] text-ink-tertiary">{formatSize(file.size)}</div>
       </div>
       <Button variant="ghost" size="icon-sm" onClick={onRemove} aria-label="Remove file"><X size={16} /></Button>
     </div>

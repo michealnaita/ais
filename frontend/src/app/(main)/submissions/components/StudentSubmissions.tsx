@@ -1,13 +1,11 @@
 "use client";
 
 /* The shared submissions page showing the student's own submissions. */
-import { useUser } from "@/context/UserProvider";
-import { useStudentSubmissions } from "@/hooks/useSubmissions";
-import { SubmissionsPage } from "./SubmissionsPage";
+import { useMySubmissions } from "@/hooks/useSubmissions";
+import { SubmissionsPage } from "@/components/submissions/SubmissionsPage";
 
 export function StudentSubmissions() {
-  const user = useUser();
-  const { data: rows = [], isPending } = useStudentSubmissions(user.id);
+  const { data: rows = [], isPending } = useMySubmissions();
 
   return (
     <SubmissionsPage

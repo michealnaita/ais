@@ -1,14 +1,7 @@
-export type AssignmentStatus = "open" | "closed" | "upcoming";
+import type { AssignmentResponse, AssignmentStatus, CreateAssignmentInput } from "./api";
 
-export type Assignment = {
-  id: number;
-  name: string;
-  course: string;
-  deadline: string;
-  iso: string;
-  submitted: number;
-  total: number;
-  status: AssignmentStatus;
-};
+export type { AssignmentStatus };
 
-export type AssignmentFormData = Pick<Assignment, "name" | "course" | "iso" | "deadline" | "total" | "status">;
+export type Assignment = AssignmentResponse;
+
+export type AssignmentFormData = CreateAssignmentInput;

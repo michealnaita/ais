@@ -3,6 +3,7 @@
 import { Upload } from "lucide-react";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { ACCEPTED_DOCUMENT_TYPES } from "@/services/documents";
 
 type FileDropzoneProps = {
   hint: string;
@@ -17,7 +18,8 @@ export function FileDropzone({ hint, onSelect }: FileDropzoneProps) {
         <span className="flex items-center gap-2 text-sm font-semibold"><Upload size={17} /> Choose a file to upload</span>
         <span className="text-[12.5px] text-ink-tertiary">{hint}</span>
       </Button>
-      <input ref={inputRef} type="file" hidden onChange={e => { const f = e.target.files?.[0]; if (f) onSelect(f); }} />
+      <input ref={inputRef} type="file" accept={ACCEPTED_DOCUMENT_TYPES} hidden
+        onChange={e => { const f = e.target.files?.[0]; if (f) onSelect(f); e.target.value = ""; }} />
     </>
   );
 }

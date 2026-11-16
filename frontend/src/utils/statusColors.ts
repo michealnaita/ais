@@ -1,7 +1,7 @@
 /* Colour overrides for status badges, layered over the shadcn Badge variant via
    className. `--badge-dot` sets the colour of the Badge `dot`. Class names are written
    out in full so Tailwind can find them. */
-import type { AssignmentStatus } from "@/types/assignment";
+import type { AssignmentStatus } from "@/types/api";
 import type { SubmissionStatus } from "./submissionStatus";
 
 /** Pill size for status badges: larger than the stock Badge, with a 7px dot. */
@@ -13,14 +13,12 @@ const RED = "bg-red-bg text-red-fg [--badge-dot:var(--color-red-dot)]";
 const GRAY = "bg-gray-bg text-gray-fg [--badge-dot:var(--color-gray-dot)]";
 
 export const SUBMISSION_STATUS_COLORS: Record<SubmissionStatus, string> = {
-  complete: GREEN,
-  processing: BLUE,
+  processed: GREEN,
+  queued: BLUE,
   failed: RED,
-  pending: GRAY,
 };
 
 export const ASSIGNMENT_STATUS_COLORS: Record<AssignmentStatus, string> = {
   open: GREEN,
-  upcoming: BLUE,
   closed: GRAY,
 };

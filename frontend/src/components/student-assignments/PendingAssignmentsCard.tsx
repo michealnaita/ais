@@ -1,28 +1,40 @@
 import type { ReactNode } from "react";
-import type { EnrolledAssignment } from "@/types/enrolledAssignment";
+import { Illustration, type IllustrationName } from "@/components/Illustration";
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Assignment } from "@/types/assignment";
 import { PendingAssignmentItem } from "./PendingAssignmentItem";
 
 type PendingAssignmentsCardProps = {
-  assignments: EnrolledAssignment[];
-  onSelect: (assignment: EnrolledAssignment) => void;
+  assignments: Assignment[];
+  onSelect: (assignment: Assignment) => void;
   title?: string;
   subtitle?: string;
-  /** Shown under the list, e.g. an "Add assignment" button. */
+  /** Optional content under the list. */
   footer?: ReactNode;
+  /** Decorative illustration in the header, top-right. */
+  illustration?: IllustrationName;
 };
 
-export function PendingAssignmentsCard({ assignments, onSelect, title = "Assignments", subtitle = "Not yet submitted for review", footer }: PendingAssignmentsCardProps) {
+export function PendingAssignmentsCard({ assignments, onSelect, title = "Assignments", subtitle = "Not yet submitted for review", footer, illustration }: PendingAssignmentsCardProps) {
   return (
-    <div className="rounded-2xl border border-line-strong px-5 pt-5 pb-3.5">
-      <div className="mb-1 flex items-center justify-between">
-        <h2 className="text-[15px] font-semibold tracking-[-0.01em] text-ink">{title}</h2>
-        <span className="min-w-[22px] rounded-full bg-black/5 px-2 py-0.5 text-center text-xs font-semibold text-ink-secondary">{assignments.length}</span>
-      </div>
-      <div className="mb-1.5 text-[12.5px] text-ink-tertiary">{subtitle}</div>
-      {assignments.length === 0
-        ? <div className="border-t border-line py-5 text-center text-[13px] text-ink-tertiary">Nothing due right now.</div>
-        : assignments.map(a => <PendingAssignmentItem key={a.id} assignment={a} onSelect={onSelect} />)}
-      {footer && <div className="border-t border-line pt-3.5 pb-1.5">{footer}</div>}
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-[15px] font-semibold">{title}</CardTitle>
+        <CardDescription>
+          <span className="font-semibold text-foreground tabular-nums">{assignments.length}</span> · {subtitle}
+        </CardDescription>
+        {illustration && (
+          <CardAction>
+            <Illustration name={illustration} className="-mt-1 h-11 w-auto" />
+          </CardAction>
+        )}
+      </CardHeader>
+      <CardContent className="space-y-1">
+        {assignments.length === 0
+          ? <div className="py-5 text-center text-sm text-muted-foreground">Nothing due right now.</div>
+          : assignments.map(a => <PendingAssignmentItem key={a.id} assignment={a} onSelect={onSelect} />)}
+      </CardContent>
+      {footer && <CardFooter>{footer}</CardFooter>}
+    </Card>
   );
 }

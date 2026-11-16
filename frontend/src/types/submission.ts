@@ -1,19 +1,6 @@
-import type { SubmissionStatus } from "@/utils/submissionStatus";
+import type { DocumentStatus, SubmissionResponse } from "./api";
 
-/** A document submitted for integrity review. */
-export type Submission = {
-  id: number;
-  /** File name. */
-  name: string;
-  ext: string;
-  size: string;
-  assignment: string;
-  course?: string;
-  date: string;
-  status: SubmissionStatus;
-  score: number | null;
-  studentId: number;
-  student: string;
-};
+/** A document submitted to an assignment for integrity review (the API's SubmissionResponse). */
+export type Submission = SubmissionResponse;
 
-export type SubmissionFilter = "all" | Exclude<SubmissionStatus, "pending">;
+export type SubmissionFilter = "all" | DocumentStatus;

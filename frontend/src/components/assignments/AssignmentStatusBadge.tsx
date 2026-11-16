@@ -5,7 +5,6 @@ import { cn } from "@/utils/cn";
 
 const STATUS_LABEL: Record<AssignmentStatus, string> = {
   open: "Open",
-  upcoming: "Upcoming",
   closed: "Closed",
 };
 

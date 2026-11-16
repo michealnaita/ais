@@ -1,32 +1,60 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
-import { createSubmission, fetchInstructorSubmissions, fetchStudentSubmissions, type SubmissionInput } from "@/services/submissions";
+import { fetchSubmissions, submitDocument } from "@/services/submissions";
 import type { Submission } from "@/types/submission";
+import { useAssignments } from "./useAssignments";
 
 /* Poll while anything is still being analysed so rows flip to "complete" on their own. */
-const pollWhileProcessing = ({ state }: { state: { data?: Submission[] } }) =>
-  state.data?.some(s => s.status === "processing") ? 1500 : false;
+export const pollWhileProcessing = ({ state }: { state: { data?: Submission[] } }) =>
+  state.data?.some(s => s.documentStatus === "queued") ? 3000 : false;
 
-export function useStudentSubmissions(studentId: number) {
+/** The signed-in student's own submissions. */
+export function useMySubmissions() {
   return useQuery({
-    queryKey: queryKeys.submissions.student(studentId),
-    queryFn: () => fetchStudentSubmissions(studentId),
+    queryKey: queryKeys.submissions.list({}),
+    queryFn: () => fetchSubmissions(),
     refetchInterval: pollWhileProcessing,
   });
 }
 
-/** Everything handed in to the instructor's assignments. */
-export function useInstructorSubmissions() {
-  return useQuery({ queryKey: queryKeys.submissions.instructor, queryFn: fetchInstructorSubmissions });
+/** Student work handed in to one assignment. */
+export function useAssignmentSubmissions(assignmentId: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.submissions.list({ assignmentId }),
+    queryFn: () => fetchSubmissions({ assignmentId }),
+    enabled: !!assignmentId,
+    refetchInterval: pollWhileProcessing,
+  });
 }
 
-/** Upload a document for review; it starts out "processing". */
+/** Everything handed in to the instructor's assignments: one request per assignment,
+    since the API lists submissions by assignment. Newest first. */
+export function useInstructorSubmissions() {
+  const { data: assignments = [], isPending: assignmentsPending } = useAssignments();
+  return useQueries({
+    queries: assignments.map(a => ({
+      queryKey: queryKeys.submissions.list({ assignmentId: a.id }),
+      queryFn: () => fetchSubmissions({ assignmentId: a.id }),
+      refetchInterval: pollWhileProcessing,
+    })),
+    combine: results => ({
+      data: results.flatMap(r => r.data ?? []).sort((a, b) => b.submittedAt.localeCompare(a.submittedAt)),
+      isPending: assignmentsPending || results.some(r => r.isPending),
+    }),
+  });
+}
+
+/** Upload a document and submit it; it starts out processing. Also used to replace one. */
 export function useSubmitDocument() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: SubmissionInput) => createSubmission(input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.submissions.all }),
+    mutationFn: submitDocument,
+    onSuccess: () => Promise.all([
+      queryClient.invalidateQueries({ queryKey: queryKeys.submissions.all }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.assignments }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard }),
+    ]),
   });
 }

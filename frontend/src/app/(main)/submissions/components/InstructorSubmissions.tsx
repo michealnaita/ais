@@ -2,7 +2,7 @@
 
 /* The shared submissions page showing every student's work across the instructor's assignments. */
 import { useInstructorSubmissions } from "@/hooks/useSubmissions";
-import { SubmissionsPage } from "./SubmissionsPage";
+import { SubmissionsPage } from "@/components/submissions/SubmissionsPage";
 
 export function InstructorSubmissions() {
   const { data = [], isPending } = useInstructorSubmissions();
