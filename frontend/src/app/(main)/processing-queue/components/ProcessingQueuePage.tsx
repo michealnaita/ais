@@ -1,79 +1,36 @@
 "use client";
 
-import { RefreshCw } from "lucide-react";
-import { useMemo, useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { FilterRow } from "@/components/FilterRow";
+/* The API reports only the worker's status and how many jobs failed; the job list and
+   worker controls stay visible but disabled until it exposes them. */
+import { Layers, RefreshCw } from "lucide-react";
+import { NotAvailable } from "@/components/NotAvailable";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/PageHeader";
-import { Badge } from "@/components/ui/badge";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useRetryFailedJobs, useRetryJob } from "../actions";
-import { FILTERS } from "../constants";
-import { useJobs } from "../queries";
-import { JobsTable } from "./JobsTable";
-import { StopWorkerDialog } from "./StopWorkerDialog";
-import type { Job, QueueFilter } from "../types";
+import { Button } from "@/components/ui/button";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { useWorkerSummary } from "../queries";
 import { WorkerStatusBanner } from "./WorkerStatusBanner";
 
 export default function ProcessingQueuePage() {
-  const { data: rows = [] } = useJobs();
-  const retryMutation = useRetryJob();
-  const retryAllMutation = useRetryFailedJobs();
-  const [running, setRunning] = useState(true);
-  const [filter, setFilter] = useState<QueueFilter>("active");
-  const [stopOpen, setStopOpen] = useState(false);
-
-  const counts = useMemo(() => {
-    const c = { pending: 0, processing: 0, complete: 0, failed: 0 };
-    rows.forEach(r => c[r.status]++);
-    return { ...c, active: c.pending + c.processing };
-  }, [rows]);
-
-  const visible = useMemo(() => {
-    if (filter === "active") return rows.filter(r => r.status === "pending" || r.status === "processing");
-    return rows.filter(r => r.status === filter);
-  }, [rows, filter]);
-
-  function retry(job: Job) {
-    retryMutation.mutate(job.id, { onSuccess: () => toast.success(`Re-queued ${job.file}`) });
-  }
-  function retryAll() {
-    retryAllMutation.mutate(undefined, {
-      onSuccess: n => toast.success(`Re-queued ${n} failed job${n === 1 ? "" : "s"}`),
-    });
-  }
-  function toggleWorker() {
-    if (running) { setStopOpen(true); }
-    else { setRunning(true); toast.success("Background worker started"); }
-  }
-  function confirmStop() { setRunning(false); setStopOpen(false); toast.success("Background worker stopped"); }
+  const { data } = useWorkerSummary();
 
   return (
-    <>
-      <PageContainer>
-        <PageHeader
-          title="Processing queue"
-          subtitle="Monitor the background worker and the documents waiting to be analysed."
-          actions={<Button variant="outline" disabled={counts.failed === 0} onClick={retryAll}><RefreshCw /> Retry all failed</Button>}
-        />
+    <PageContainer>
+      <PageHeader
+        title="Processing queue"
+        subtitle="Monitor the background worker and the documents waiting to be analysed."
+        actions={<NotAvailable><Button variant="outline" disabled><RefreshCw /> Retry all failed</Button></NotAvailable>}
+      />
 
-        <WorkerStatusBanner running={running} counts={counts} onToggle={toggleWorker} />
+      <WorkerStatusBanner summary={data} />
 
-        <FilterRow>
-          <div className="text-[13.5px] text-ink-tertiary">{visible.length} job{visible.length === 1 ? "" : "s"} in view</div>
-          <ToggleGroup value={[filter]} onValueChange={v => { if (v[0]) setFilter(v[0] as QueueFilter); }}>
-            {FILTERS.map(f => (
-              <ToggleGroupItem key={f.key} value={f.key}>{f.label} <Badge variant="secondary">{counts[f.key]}</Badge></ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-        </FilterRow>
-
-        <JobsTable jobs={visible} onRetry={retry} />
-      </PageContainer>
-
-      {stopOpen && <StopWorkerDialog onClose={() => setStopOpen(false)} onConfirm={confirmStop} />}
-    </>
+      <Empty className="mt-4 border border-dashed">
+        <EmptyHeader>
+          <EmptyMedia variant="icon"><Layers /></EmptyMedia>
+          <EmptyTitle>The job list isn&apos;t available yet.</EmptyTitle>
+          <EmptyDescription>Each document&apos;s processing status shows on the Documents page.</EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    </PageContainer>
   );
 }

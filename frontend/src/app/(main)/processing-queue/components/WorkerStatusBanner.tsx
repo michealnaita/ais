@@ -1,17 +1,14 @@
-import { Cpu, Play, Square } from "lucide-react";
+import { Cpu, Square } from "lucide-react";
+import { NotAvailable } from "@/components/NotAvailable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
-import type { QueueFilter } from "../types";
+import type { WorkerSummary } from "../types";
 import { WorkerStat } from "./WorkerStat";
 
-type WorkerStatusBannerProps = {
-  running: boolean;
-  counts: Record<QueueFilter, number>;
-  onToggle: () => void;
-};
-
-export function WorkerStatusBanner({ running, counts, onToggle }: WorkerStatusBannerProps) {
+export function WorkerStatusBanner({ summary }: { summary?: WorkerSummary }) {
+  const running = summary?.workerStatus !== "stopped";
+  const failed = summary?.failedJobCount ?? 0;
   return (
     <div className={cn(
       "mb-6 flex items-center gap-4 rounded-2xl border px-[22px] py-[18px]",
@@ -23,20 +20,18 @@ export function WorkerStatusBanner({ running, counts, onToggle }: WorkerStatusBa
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2.5 text-base font-semibold">
           Background worker
-          <Badge variant={running ? "secondary" : "destructive"}>{running ? "Running" : "Stopped"}</Badge>
+          {summary && <Badge variant={running ? "secondary" : "destructive"}>{running ? "Running" : "Stopped"}</Badge>}
         </div>
         <div className="mt-[3px] text-[13.5px] text-ink-tertiary">{running
-          ? `Celery · 1 task active · ${counts.pending} waiting in queue`
-          : "Stopped — no jobs will be processed until restarted"}</div>
+          ? "Celery · documents are processed as they're uploaded"
+          : "Stopped — no documents will be processed until it's restarted"}</div>
       </div>
       <div className="mr-2 flex gap-[26px]">
-        <WorkerStat value={counts.processing} label="PROCESSING" />
-        <WorkerStat value={counts.pending} label="PENDING" />
-        <WorkerStat value={counts.failed} label="FAILED" fail={counts.failed > 0} />
+        <WorkerStat value={failed} label="FAILED" fail={failed > 0} />
       </div>
-      {running
-        ? <Button variant="outline" onClick={onToggle}><Square size={15} fill="currentColor" /> Stop worker</Button>
-        : <Button onClick={onToggle}><Play size={16} fill="currentColor" /> Start worker</Button>}
+      <NotAvailable>
+        <Button variant="outline" disabled><Square size={15} fill="currentColor" /> {running ? "Stop worker" : "Start worker"}</Button>
+      </NotAvailable>
     </div>
   );
 }

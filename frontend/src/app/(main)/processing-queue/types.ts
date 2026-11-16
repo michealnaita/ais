@@ -1,14 +1,6 @@
-import type { SubmissionStatus } from "@/utils/submissionStatus";
+import type { AdminDashboard } from "@/types/api";
 
-export type Job = {
-  id: number;
-  file: string;
-  owner: string;
-  assignment: string;
-  status: SubmissionStatus;
-  progress?: number;
-  queued: string;
-  err?: string | null;
+/** What the API exposes about the worker today: its status and the failed-job count. */
+export type WorkerSummary = Pick<AdminDashboard, "failedJobCount"> & {
+  workerStatus: AdminDashboard["systemHealth"]["workerStatus"];
 };
-
-export type QueueFilter = "active" | SubmissionStatus;
