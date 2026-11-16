@@ -1,10 +1,7 @@
-export type Severity = "info" | "warning" | "error";
+import type { LogLevel, SystemLog } from "@/types/api";
 
-export type LogEntry = {
-  t: string;
-  src: string;
-  sev: Severity;
-  msg: string;
-};
+export type Severity = LogLevel;
+
+export type LogEntry = SystemLog;
 
 export type LogFilter = "all" | Severity;

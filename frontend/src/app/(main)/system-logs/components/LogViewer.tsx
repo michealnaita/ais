@@ -13,11 +13,11 @@ type LogViewerProps = {
 
 export function LogViewer({ entries, total, loading }: LogViewerProps) {
   return (
-    <div className="mt-[18px] overflow-hidden rounded-2xl border border-line bg-white">
+    <div className="mt-[18px] overflow-hidden rounded-2xl border border-line bg-white [&_[data-slot=table-container]]:rounded-none [&_[data-slot=table-container]]:shadow-none [&_[data-slot=table-container]]:ring-0">
       <div className="flex items-center gap-2 border-b border-line bg-panel px-4 py-3">
         <List size={16} />
         <span className="text-[13px] font-semibold">ais.system.log</span>
-        <span className="ml-auto text-[12.5px] text-ink-tertiary">{entries.length} of {total} entries · today</span>
+        <span className="ml-auto text-[12.5px] text-ink-tertiary">{entries.length} of {total} entries</span>
       </div>
       <Table>
         <TableHeader>
@@ -35,7 +35,7 @@ export function LogViewer({ entries, total, loading }: LogViewerProps) {
                 <Empty><EmptyHeader><EmptyMedia variant="icon"><List /></EmptyMedia><EmptyTitle>{loading ? "Loading logs…" : "No log entries match this view."}</EmptyTitle></EmptyHeader></Empty>
               </TableCell>
             </TableRow>
-          ) : entries.map((l, i) => <LogRow key={i} entry={l} />)}
+          ) : entries.map(l => <LogRow key={l.id} entry={l} />)}
         </TableBody>
       </Table>
     </div>

@@ -21,13 +21,13 @@ export default function SystemLogsPage() {
 
   const counts = useMemo(() => {
     const c: Record<LogFilter, number> = { all: logs.length, info: 0, warning: 0, error: 0 };
-    logs.forEach(l => c[l.sev]++);
+    logs.forEach(l => c[l.level]++);
     return c;
   }, [logs]);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return logs.filter(l => (filter === "all" || l.sev === filter) && (!q || l.msg.toLowerCase().includes(q) || l.src.toLowerCase().includes(q)));
+    return logs.filter(l => (filter === "all" || l.level === filter) && (!q || [l.message, l.source, l.type].some(v => v.toLowerCase().includes(q))));
   }, [logs, filter, query]);
 
   return (
