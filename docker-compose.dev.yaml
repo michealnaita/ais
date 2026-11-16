@@ -1,0 +1,64 @@
+# Local development stack. Apps are still reachable on localhost:3000 and
+# localhost:8000, and the .env files keep localhost URLs so every app also
+# runs outside Docker. Only values that must differ inside the Docker network
+# are overridden under `environment:`.
+#
+#   docker compose -f docker-compose.dev.yaml up --build
+#
+# After changing dependencies, rebuild and refresh the dependency volumes:
+#   docker compose -f docker-compose.dev.yaml up --build --renew-anon-volumes
+
+x-backend: &backend
+  build:
+    context: ./backend
+    dockerfile: Dockerfile.base
+  env_file: ./backend/.env
+  environment:
+    # "localhost" inside a container is the container itself
+    REDIS_URL: redis://redis:6379/0
+  volumes:
+    - ./backend:/app/backend
+  working_dir: /app/backend
+  depends_on:
+    redis:
+      condition: service_healthy
+
+services:
+  redis:
+    image: redis:8-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    <<: *backend
+    command: uv run fastapi dev --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+
+  worker:
+    <<: *backend
+    command: uv run celery -A app.worker worker --loglevel=info
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.base
+    env_file: ./frontend/.env.local
+    environment:
+      # The /api rewrite runs inside this container, so it must use the service name
+      API_URL: http://backend:8000
+    volumes:
+      - ./frontend:/app/frontend
+      # Keep the image's Linux node_modules instead of the host's macOS one
+      - /app/frontend/node_modules
+    working_dir: /app/frontend
+    command: npm run dev
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
