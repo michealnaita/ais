@@ -1,4 +1,5 @@
-import { EllipsisVertical, Eye, Lock, PenLine, Trash2 } from "lucide-react";
+import { EllipsisVertical, Eye, Lock, PenLine, Trash2, UserPlus } from "lucide-react";
+import { NotAvailable } from "@/components/NotAvailable";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { Assignment } from "@/types/assignment";
@@ -9,6 +10,7 @@ type AssignmentRowMenuProps = {
   onAction: (action: AssignmentAction) => void;
 };
 
+/* Edit, close and delete stay visible but disabled until the API supports them. */
 export function AssignmentRowMenu({ assignment, onAction }: AssignmentRowMenuProps) {
   return (
     <DropdownMenu>
@@ -17,12 +19,13 @@ export function AssignmentRowMenu({ assignment, onAction }: AssignmentRowMenuPro
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => onAction("view")}><Eye /> View submissions</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onAction("edit")}><PenLine /> Edit details</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onAction("enroll")}><UserPlus /> Enroll students</DropdownMenuItem>
+        <NotAvailable className="flex"><DropdownMenuItem disabled><PenLine /> Edit details</DropdownMenuItem></NotAvailable>
         {assignment.status === "open" && (
-          <DropdownMenuItem onClick={() => onAction("close")}><Lock /> Close assignment</DropdownMenuItem>
+          <NotAvailable className="flex"><DropdownMenuItem disabled><Lock /> Close assignment</DropdownMenuItem></NotAvailable>
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive" onClick={() => onAction("delete")}><Trash2 /> Delete</DropdownMenuItem>
+        <NotAvailable className="flex"><DropdownMenuItem variant="destructive" disabled><Trash2 /> Delete</DropdownMenuItem></NotAvailable>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -5,70 +5,66 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import type { Assignment, AssignmentFormData, AssignmentStatus } from "@/types/assignment";
-import { isoToDisplay } from "@/utils/formatDate";
+import { Textarea } from "@/components/ui/textarea";
+import type { AssignmentFormData } from "@/types/assignment";
+import { ENROLLMENT_CODE_MAX } from "../constants";
 
 type AssignmentFormDialogProps = {
-  mode: "create" | "edit";
-  initial?: Assignment;
+  pending?: boolean;
   onClose: () => void;
   onSave: (data: AssignmentFormData) => void;
 };
 
-export function AssignmentFormDialog({ mode, initial, onClose, onSave }: AssignmentFormDialogProps) {
-  const [name, setName] = useState(initial?.name || "");
-  const [course, setCourse] = useState(initial?.course || "");
-  const [iso, setIso] = useState(initial?.iso || "");
-  const [total, setTotal] = useState<string>(initial ? String(initial.total) : "");
-  const [status, setStatus] = useState<AssignmentStatus>(initial?.status || "open");
+/* Creating only: the API has no endpoint for editing an assignment. */
+export function AssignmentFormDialog({ pending, onClose, onSave }: AssignmentFormDialogProps) {
+  const [title, setTitle] = useState("");
+  const [enrollmentCode, setEnrollmentCode] = useState("");
+  const [deadline, setDeadline] = useState("");
+  const [description, setDescription] = useState("");
 
-  const valid = name.trim() && course.trim() && iso && Number(total) > 0;
+  const valid = title.trim() && enrollmentCode.trim() && deadline;
 
   function submit() {
     if (!valid) return;
-    onSave({ name: name.trim(), course, iso, deadline: isoToDisplay(iso), total: Number(total), status });
+    onSave({
+      title: title.trim(),
+      enrollmentCode: enrollmentCode.trim(),
+      /* datetime-local is the viewer's local time; the API stores UTC. */
+      deadline: new Date(deadline).toISOString(),
+      description: description.trim() || null,
+    });
   }
 
   return (
     <Dialog open onOpenChange={open => { if (!open) onClose(); }}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{mode === "edit" ? "Edit assignment" : "Create assignment"}</DialogTitle>
-          <DialogDescription>{mode === "edit" ? "Update the assignment details. Changes are visible to enrolled students immediately." : "Set up a new assignment for your students to submit against."}</DialogDescription>
+          <DialogTitle>Create assignment</DialogTitle>
+          <DialogDescription>Set up a new assignment. You&apos;ll enroll students next.</DialogDescription>
         </DialogHeader>
         <FieldGroup>
           <Field>
-            <FieldLabel htmlFor="assignment-name">Assignment name</FieldLabel>
-            <Input id="assignment-name" value={name} autoFocus placeholder="e.g. Essay 4 — Republican Era" onChange={e => setName(e.target.value)} />
+            <FieldLabel htmlFor="assignment-title">Assignment name</FieldLabel>
+            <Input id="assignment-title" value={title} autoFocus placeholder="e.g. Essay 4 — Republican Era" onChange={e => setTitle(e.target.value)} />
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field>
-              <FieldLabel htmlFor="assignment-course">Course</FieldLabel>
-              <Input id="assignment-course" value={course} placeholder="e.g. HIST 304" onChange={e => setCourse(e.target.value)} />
+              <FieldLabel htmlFor="assignment-code">Enrollment code</FieldLabel>
+              <Input id="assignment-code" value={enrollmentCode} maxLength={ENROLLMENT_CODE_MAX} placeholder="e.g. HIST304" onChange={e => setEnrollmentCode(e.target.value)} />
             </Field>
             <Field>
               <FieldLabel htmlFor="assignment-deadline">Deadline</FieldLabel>
-              <Input id="assignment-deadline" type="date" value={iso} onChange={e => setIso(e.target.value)} />
+              <Input id="assignment-deadline" type="datetime-local" value={deadline} onChange={e => setDeadline(e.target.value)} />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Field>
-              <FieldLabel htmlFor="assignment-total">Enrolled students</FieldLabel>
-              <Input id="assignment-total" type="number" min="1" value={total} placeholder="25" onChange={e => setTotal(e.target.value)} />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="assignment-status">Status</FieldLabel>
-              <NativeSelect id="assignment-status" className="w-full" value={status} onChange={e => setStatus(e.target.value as AssignmentStatus)}>
-                <NativeSelectOption value="open">Open — accepting submissions</NativeSelectOption>
-                <NativeSelectOption value="upcoming">Upcoming — not open yet</NativeSelectOption>
-              </NativeSelect>
-            </Field>
-          </div>
+          <Field>
+            <FieldLabel htmlFor="assignment-description">Description <span className="font-normal text-muted-foreground">(optional)</span></FieldLabel>
+            <Textarea id="assignment-description" value={description} rows={4} placeholder="What students should hand in" onChange={e => setDescription(e.target.value)} />
+          </Field>
         </FieldGroup>
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
-          <Button disabled={!valid} onClick={submit}>{mode === "edit" ? "Save changes" : "Create assignment"}</Button>
+          <Button disabled={!valid || pending} onClick={submit}>Create assignment</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

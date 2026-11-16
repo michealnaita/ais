@@ -1,9 +1,10 @@
-import { FileText } from "lucide-react";
+import { Folder } from "lucide-react";
 import { AssignmentStatusBadge } from "@/components/assignments/AssignmentStatusBadge";
 import { RowIcon, TitleCell } from "@/components/TitleCell";
 import { TableCell, TableRow } from "@/components/ui/table";
 import type { Assignment } from "@/types/assignment";
-import { TODAY_ISO } from "../constants";
+import { dueInfo } from "@/utils/due";
+import { formatDate } from "@/utils/formatDate";
 import type { AssignmentAction } from "../types";
 import { AssignmentRowMenu } from "./AssignmentRowMenu";
 
@@ -13,15 +14,18 @@ type AssignmentRowProps = {
 };
 
 export function AssignmentRow({ assignment: a, onAction }: AssignmentRowProps) {
-  const pastDue = a.iso < TODAY_ISO && a.status !== "closed";
+  const pastDue = dueInfo(a.deadline).past && a.status !== "closed";
+  const submitted = a.submissionCount ?? 0;
+  const enrolled = a.enrollmentCount ?? 0;
   return (
-    <TableRow>
-      <TableCell><TitleCell icon={<RowIcon><FileText size={18} /></RowIcon>} title={a.name} caption={`AIS-${String(a.id).slice(-4)}`} /></TableCell>
-      <TableCell>{a.course}</TableCell>
-      <TableCell className={pastDue ? "text-late" : undefined}>{a.deadline}</TableCell>
-      <TableCell>{a.submitted} submission{a.submitted === 1 ? "" : "s"}</TableCell>
+    <TableRow className="cursor-pointer" onClick={() => onAction("view")}>
+      <TableCell><TitleCell icon={<RowIcon><Folder size={18} /></RowIcon>} title={a.title} caption={`AIS-${a.id.slice(0, 6).toUpperCase()}`} /></TableCell>
+      <TableCell className="font-mono text-[13px]">{a.enrollmentCode}</TableCell>
+      <TableCell className={pastDue ? "text-late" : undefined}>{formatDate(a.deadline)}</TableCell>
+      <TableCell>{submitted} of {enrolled} submitted</TableCell>
       <TableCell><AssignmentStatusBadge status={a.status} /></TableCell>
-      <TableCell><AssignmentRowMenu assignment={a} onAction={onAction} /></TableCell>
+      {/* Keep menu clicks from also opening the row. */}
+      <TableCell onClick={e => e.stopPropagation()}><AssignmentRowMenu assignment={a} onAction={onAction} /></TableCell>
     </TableRow>
   );
 }
