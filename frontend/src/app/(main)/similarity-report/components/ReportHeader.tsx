@@ -1,27 +1,50 @@
-import { similarityBand } from "@/utils/similarity";
-import type { ReportDetails, ReportView } from "../types";
-import { scoreColor } from "../utils";
-import { ScoreRing } from "./ScoreRing";
+import { ChevronLeft, Download, FileUp } from "lucide-react";
+import { NotAvailable } from "@/components/NotAvailable";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/utils/cn";
+import { CARD_HEADER } from "../constants";
+import type { ReportView } from "../types";
 
 const Dot = () => <span className="size-[3px] rounded-full bg-[#c4c4c4]" />;
 
-export function ReportHeader({ doc, student, assignment, date, score, view }: ReportDetails & { view: ReportView }) {
+type ReportHeaderProps = {
+  doc: string;
+  student: string;
+  assignment: string;
+  /** Display date. */
+  date: string;
+  view: ReportView;
+  onBack: () => void;
+  /** Students only: opens the replace-document dialog. */
+  onReplace?: () => void;
+};
+
+/* Header of the document card: back, title + metadata, download (and replace, for students). */
+export function ReportHeader({ doc, student, assignment, date, view, onBack, onReplace }: ReportHeaderProps) {
   return (
-    <div className="flex shrink-0 items-center justify-between gap-[30px] border-b border-line px-7 py-[22px]">
-      <div className="min-w-0">
-        <div className="truncate font-display text-[27px] leading-[1.15] font-medium tracking-[-0.01em]">{doc}</div>
-        <div className="mt-2 flex flex-wrap items-center gap-[9px] text-[13.5px] text-ink-secondary">
+    <div className={cn(CARD_HEADER, "gap-3 pr-5 pl-3")}>
+      <Button variant="ghost" size="icon" aria-label="Back" onClick={onBack}>
+        <ChevronLeft size={20} />
+      </Button>
+      <div className="min-w-0 flex-1">
+        <h1 className="truncate font-display text-[22px] leading-[1.2] font-medium tracking-[-0.01em]">{doc}</h1>
+        <div className="mt-1 flex flex-wrap items-center gap-[9px] text-[13px] text-ink-secondary">
           {view === "instructor" && <><b className="font-semibold text-ink">{student}</b><Dot /></>}
           <span>{assignment}</span><Dot />
           <span>Submitted {date}</span>
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-4">
-        <div className="text-right">
-          <div className="text-[12.5px] tracking-[.06em] text-ink-tertiary uppercase">Overall similarity</div>
-          <div className="mt-[3px] text-[15px] font-semibold" style={{ color: scoreColor(score) }}>{similarityBand(score)}</div>
-        </div>
-        <ScoreRing score={score} />
+      <div className="flex shrink-0 items-center gap-2">
+        <NotAvailable>
+          <Button variant="outline" disabled>
+            <Download size={16} /> Download
+          </Button>
+        </NotAvailable>
+        {onReplace && (
+          <Button onClick={onReplace}>
+            <FileUp size={16} /> Resubmit
+          </Button>
+        )}
       </div>
     </div>
   );

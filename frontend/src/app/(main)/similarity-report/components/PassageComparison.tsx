@@ -1,5 +1,4 @@
 import { cn } from "@/utils/cn";
-import { scoreColor } from "../utils";
 import type { Passage } from "../types";
 
 type PassageComparisonProps = {
@@ -19,10 +18,7 @@ export function PassageComparison({ passage, number, selected, onPick }: Passage
       )}
       onClick={onPick}
     >
-      <div className="mb-[11px] flex items-center justify-between">
-        <span className="text-xs font-semibold text-ink-secondary">Passage {number}</span>
-        <span className="text-[13px] font-bold tabular-nums" style={{ color: scoreColor(passage.score) }}>{passage.score}%</span>
-      </div>
+      <div className="mb-[11px] text-xs font-semibold text-ink-secondary">Passage {number}</div>
       <CompareLabel>This submission</CompareLabel>
       <div className={cn(BOX, "mb-[13px] border border-[#e7e7e7] bg-[#f3f4f6]")}>{passage.text}</div>
       <CompareLabel>Matched source</CompareLabel>
