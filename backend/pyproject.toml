@@ -10,6 +10,7 @@ requires-python = ">=3.14"
 dependencies = [
     "beautifulsoup4>=4.15.0",
     "celery[redis]>=5.7.0",
+    "chromadb",
     "fastapi[standard]>=0.142.1",
     "mammoth>=1.13.0",
     "pwdlib[argon2]>=0.3.1",
@@ -17,7 +18,9 @@ dependencies = [
     "pydantic-settings>=2.15.0",
     "pyjwt>=2.15.1",
     "python-docx>=1.2.0",
+    "sentence-transformers",
     "sqlalchemy>=2.1.1",
+    
 ]
 
 [tool.uv]
