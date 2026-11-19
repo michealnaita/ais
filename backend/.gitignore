@@ -23,3 +23,7 @@ database/
 
 # macOS
 .DS_Store
+
+# Local similarity model and ChromaDB
+models/
+chroma_db/
