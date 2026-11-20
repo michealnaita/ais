@@ -8,13 +8,20 @@ os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 import chromadb
 from sentence_transformers import SentenceTransformer
 
+from app.config import Config
 
-MODEL_PATH = "./models/all-MiniLM-L6-v2"   
-DB_PATH = "./chroma_db"                    
+#MODEL_PATH = "./models/all-MiniLM-L6-v2"   
+#DB_PATH = "./chroma_db"                    
+#COLLECTION_NAME = "document_chunks"
+#DEFAULT_THRESHOLD = 0.75                   
+#LOW_MAX = 20.0                             
+#MEDIUM_MAX = 50.0   
+MODEL_PATH = str(Config.MODEL_DIR)
+DB_PATH = str(Config.CHROMA_DIR)
 COLLECTION_NAME = "document_chunks"
-DEFAULT_THRESHOLD = 0.75                   
-LOW_MAX = 20.0                             
-MEDIUM_MAX = 50.0                          
+DEFAULT_THRESHOLD = 0.75
+LOW_MAX = 20.0
+MEDIUM_MAX = 50.0
 
 
 _model = None  
