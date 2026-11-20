@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     # Rendered HTML of processed documents, one <document_id>.html per document
     HTML_DIR: Path = BASE_DIR / "storage" / "html"
     # Redis serves as both the Celery broker and the result backend
+    
+    MODEL_DIR: Path = BASE_DIR / "models" / "all-MiniLM-L6-v2"
+    CHROMA_DIR: Path = BASE_DIR / "chroma_db"
+    
     REDIS_URL: str
     # Storage quota for all uploaded documents, in bytes (default 10 GiB)
     MAX_STORAGE_SIZE: int = 10 * 1024**3
